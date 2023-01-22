@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -202,12 +203,54 @@ namespace GodotPCKExplorer
 
             string filePath = "";
             string dirPath = "";
+            List<string> fileList = null;
             try
             {
                 if (args.Length == 3)
                 {
                     filePath = Path.GetFullPath(args[1].Replace("\"", ""));
                     dirPath = Path.GetFullPath(args[2].Replace("\"", ""));
+                }
+                else if (args.Length == 4)
+                {
+
+                    filePath = Path.GetFullPath(args[1].Replace("\"", ""));
+                    dirPath = Path.GetFullPath(args[2].Replace("\"", ""));
+                    string wildcard = args[3];
+
+                    if (wildcard.Length == 0)
+                    {
+                        Utils.CommandLog("Empty wildcard argument.", "Error", false);
+                        return;
+                    }
+
+                    if (!wildcard.StartsWith("res://"))
+                    {
+                        wildcard = $"res://{wildcard}";
+                    }
+
+                    fileList = new List<string>();
+
+                    // Collect based on wildcard
+                    using (var pckReader = new PCKReader())
+                    {
+                        pckReader.OpenFile(filePath);
+
+                        foreach (var fileInfo in pckReader.Files)
+                        {
+                            string fileName = fileInfo.Key;
+                            if (Utils.IsMatchWildCard(fileName, wildcard, false))
+                            {
+                                fileList.Add(fileName);
+                            }
+                        }
+                    }
+
+                    if (fileList.Count == 0)
+                    {
+                        Utils.CommandLog($"Wildcard matched 0 items in pck.", "Error", false);
+                        return;
+                    }
                 }
                 else
                 {
@@ -221,7 +264,7 @@ namespace GodotPCKExplorer
                 return;
             }
 
-            PCKActions.ExtractPCKRun(filePath, dirPath, overwriteExisting);
+            PCKActions.ExtractPCKRun(filePath, dirPath, overwriteExisting, fileList);
         }
 
         static void ExtractSkipExistingPCKCommand(string[] args)
