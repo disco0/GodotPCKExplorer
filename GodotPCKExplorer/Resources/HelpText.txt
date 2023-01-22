@@ -19,6 +19,10 @@ Examples of valid commands:
 	-e C:/Game.exe "C:/Path with Spaces"
 	-e C:/Game.pck Output_dir
 
+    Extracted files can be controlled by optional wildcard parameter
+	-e [path to pack] [path to output folder] {[wildcard]}
+	-e C:/Game.pck Output_dir .import/*
+
 -es	Export like -e but skip existing files
 
 -p	Pack content of folder into .pck file
